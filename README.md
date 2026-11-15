@@ -65,3 +65,6 @@ La imagen compila el proyecto por dentro, así que no hace falta generar el `.ja
     docker run --rm -p 9090:9090 -e SPRING_PROFILES_ACTIVE=prod customers
 
 Es la misma imagen en ambos casos; solo cambia el perfil que se elige con la variable de entorno.
+
+## Descargar el ejecutable
+El jar listo para usar está en [Releases](https://github.com/crsalazarr/customers/releases/tag/v0.0.1).
