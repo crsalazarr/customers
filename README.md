@@ -81,3 +81,8 @@ DEV (puerto 8080):
 PROD simulado (puerto 9090):
 
     java -jar customers-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
+
+## Despliegue en la nube
+Desplegado en Render (plan gratuito, puede tardar cerca de un minuto en responder si estuvo inactivo):
+- DEV: https://customers-dev.onrender.com
+- PROD: https://customers-prod-xhd7.onrender.com
