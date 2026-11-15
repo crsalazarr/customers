@@ -23,6 +23,7 @@ Genera el ejecutable `target/customers-0.0.1-SNAPSHOT.jar`.
 
 ## Ejecutar en PROD (simulado)
     java -jar target/customers-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
+    
 
 ## Diferencias entre ambientes
 La configuración vive en `src/main/resources`:
@@ -68,3 +69,15 @@ Es la misma imagen en ambos casos; solo cambia el perfil que se elige con la var
 
 ## Descargar el ejecutable
 El jar listo para usar está en [Releases](https://github.com/crsalazarr/customers/releases/tag/v0.0.1).
+
+## Ejecutar el jar descargado (Releases)
+
+Si no quieres construir el proyecto, descarga el jar desde [Releases](https://github.com/crsalazarr/customers/releases/tag/v0.0.1) y ejecútalo desde la carpeta donde lo guardaste (sin `target/`). Solo necesitas Java 17 o superior.
+
+DEV (puerto 8080):
+
+    java -jar customers-0.0.1-SNAPSHOT.jar --spring.profiles.active=dev
+
+PROD simulado (puerto 9090):
+
+    java -jar customers-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
