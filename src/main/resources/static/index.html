@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Customers</title>
+<style>
+  :root {
+    --bg1: #0f172a; --bg2: #1e293b;
+    --card: rgba(255,255,255,.06); --border: rgba(255,255,255,.12);
+    --text: #e2e8f0; --muted: #94a3b8;
+    --accent: #38bdf8; --accent2: #6366f1;
+  }
+  body[data-env="prod"] { --accent: #fbbf24; --accent2: #f97316; }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: radial-gradient(1200px 600px at 10% -10%, color-mix(in srgb, var(--accent) 22%, transparent), transparent),
+                linear-gradient(160deg, var(--bg1), var(--bg2));
+    transition: background .4s;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 32px 20px 60px; }
+
+  header { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+  h1 { margin: 0; font-size: 1.9rem; letter-spacing: -.02em; }
+  h1 span { background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sub { color: var(--muted); margin: 4px 0 0; font-size: .95rem; }
+
+  .env { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 14px;
+         background: var(--card); border: 1px solid var(--border); backdrop-filter: blur(8px); }
+  .badge { font-weight: 700; font-size: .8rem; letter-spacing: .08em; padding: 5px 12px; border-radius: 999px;
+           color: #0b1220; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+  .env small { display: block; color: var(--muted); font-size: .78rem; line-height: 1.35; }
+  .env strong { font-size: .92rem; }
+
+  .grid { display: grid; grid-template-columns: 340px 1fr; gap: 20px; }
+  @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 22px; backdrop-filter: blur(8px); }
+  .card h2 { margin: 0 0 16px; font-size: 1.05rem; display: flex; align-items: center; justify-content: space-between; }
+
+  label { display: block; font-size: .82rem; color: var(--muted); margin: 0 0 6px; }
+  input { width: 100%; padding: 12px 14px; margin-bottom: 14px; border-radius: 12px; color: var(--text);
+          background: rgba(0,0,0,.25); border: 1px solid var(--border); font-size: .95rem; outline: none; transition: border-color .2s, box-shadow .2s; }
+  input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
+  input.bad { border-color: #f87171; }
+
+  button { cursor: pointer; border: 0; border-radius: 12px; font-weight: 600; font-size: .95rem; padding: 12px 16px; transition: transform .1s, opacity .2s; }
+  button:active { transform: scale(.98); }
+  .primary { width: 100%; color: #0b1220; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+  .primary:disabled { opacity: .6; cursor: wait; }
+  .ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); padding: 6px 12px; font-size: .8rem; }
+  .ghost:hover { color: var(--text); }
+
+  .count { font-size: .75rem; padding: 3px 10px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 20%, transparent); color: var(--accent); margin-left: 8px; }
+  ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  li { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-radius: 14px; background: rgba(0,0,0,.2); border: 1px solid var(--border); animation: pop .3s ease; }
+  @keyframes pop { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .avatar { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; color: #0b1220; flex: none; }
+  .info b { display: block; font-size: .97rem; }
+  .info span { color: var(--muted); font-size: .85rem; word-break: break-all; }
+  .empty { text-align: center; color: var(--muted); padding: 36px 10px; }
+  .empty .big { font-size: 2.2rem; margin-bottom: 6px; }
+
+  #toast { position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 30px); opacity: 0; pointer-events: none;
+           padding: 12px 20px; border-radius: 12px; background: #0b1220; border: 1px solid var(--border); transition: all .3s; font-size: .92rem; }
+  #toast.show { opacity: 1; transform: translate(-50%, 0); }
+  #toast.err { border-color: #f87171; color: #fecaca; }
+</style>
+</head>
+<body data-env="dev">
+<div class="wrap">
+
+  <header>
+    <div>
+      <h1>Gestión de <span>clientes</span></h1>
+      <p class="sub">Kata · Ciclo de vida de una aplicación</p>
+    </div>
+    <div class="env">
+      <span class="badge" id="badge">…</span>
+      <div>
+        <strong id="envName">Conectando…</strong>
+        <small id="envMsg"></small>
+        <small id="envPort"></small>
+      </div>
+    </div>
+  </header>
+
+  <div class="grid">
+    <section class="card">
+      <h2>Nuevo cliente</h2>
+      <label for="name">Nombre</label>
+      <input id="name" placeholder="Juan Perez" autocomplete="off">
+      <label for="email">Correo</label>
+      <input id="email" type="email" placeholder="juan@email.com" autocomplete="off">
+      <button class="primary" id="btn">Crear cliente</button>
+    </section>
+
+    <section class="card">
+      <h2>
+        <span>Clientes<span class="count" id="count">0</span></span>
+        <button class="ghost" id="refresh">Actualizar</button>
+      </h2>
+      <ul id="list"></ul>
+    </section>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const emailOk = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+
+  function toast(msg, err = false) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.className = 'show' + (err ? ' err' : '');
+    clearTimeout(toast.id);
+    toast.id = setTimeout(() => t.className = '', 2600);
+  }
+
+  function hue(str) {
+    let h = 0;
+    for (const c of str) h = (h * 31 + c.charCodeAt(0)) % 360;
+    return h;
+  }
+
+  async function loadInfo() {
+    try {
+      const d = await (await fetch('/api/info')).json();
+      const env = d.name.endsWith('prod') ? 'prod' : 'dev';
+      document.body.dataset.env = env;
+      $('badge').textContent = env.toUpperCase();
+      $('envName').textContent = d.name;
+      $('envMsg').textContent = d.message;
+      $('envPort').textContent = 'Puerto ' + d.port;
+      document.title = d.name;
+    } catch {
+      $('envName').textContent = 'Sin conexión';
+    }
+  }
+
+  async function loadCustomers() {
+    try {
+      const res = await fetch('/api/customers');
+      const data = await res.json();
+      const ul = $('list');
+      ul.innerHTML = '';
+      $('count').textContent = data.length;
+
+      if (!data.length) {
+        ul.innerHTML = '<div class="empty"><div class="big">📭</div>Aún no hay clientes registrados</div>';
+        return;
+      }
+      data.slice().reverse().forEach(c => {
+        const li = document.createElement('li');
+        const av = document.createElement('div');
+        av.className = 'avatar';
+        av.textContent = (c.name || '?').trim().charAt(0).toUpperCase();
+        av.style.background = `hsl(${hue(c.name || '')} 80% 70%)`;
+        const info = document.createElement('div');
+        info.className = 'info';
+        const b = document.createElement('b');
+        b.textContent = c.name;
+        const s = document.createElement('span');
+        s.textContent = c.email;
+        info.append(b, s);
+        li.append(av, info);
+        ul.append(li);
+      });
+    } catch {
+      toast('No se pudo cargar la lista', true);
+    }
+  }
+
+  async function crear() {
+    const name = $('name').value.trim();
+    const email = $('email').value.trim();
+    $('name').classList.toggle('bad', !name);
+    $('email').classList.toggle('bad', !emailOk(email));
+    if (!name || !emailOk(email)) { toast('Revisa el nombre y el correo', true); return; }
+
+    $('btn').disabled = true;
+    try {
+      const res = await fetch('/api/customers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email })
+      });
+      if (!res.ok) throw new Error();
+      $('name').value = '';
+      $('email').value = '';
+      toast('Cliente creado ✔');
+      await loadCustomers();
+    } catch {
+      toast('No se pudo crear el cliente', true);
+    } finally {
+      $('btn').disabled = false;
+    }
+  }
+
+  $('btn').addEventListener('click', crear);
+  $('refresh').addEventListener('click', loadCustomers);
+  $('email').addEventListener('keydown', e => { if (e.key === 'Enter') crear(); });
+
+  loadInfo();
+  loadCustomers();
+</script>
+</body>
+</html>
